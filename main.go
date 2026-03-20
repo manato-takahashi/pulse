@@ -5,7 +5,17 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
+
+type Config struct {
+	Endpoints []Endpoint `yaml:"endpoints"`
+}
+
+type Endpoint struct {
+	URL string `yaml:"url"`
+}
 
 type HealthResult struct {
 	URL      string
@@ -36,20 +46,35 @@ func main() {
 		fmt.Println("Error: 引数が足りません")
 		return
 	}
-	url := os.Args[1]
 
-	result := checkHealth(url)
-
-	var mark string
-	if result.Status >= 200 && result.Status < 300 {
-		mark = "✓"
-	} else {
-		mark = "×"
+	data, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Println("Error: yamlが読み込めません")
+		return
 	}
 
-	if result.Err != nil {
-		fmt.Printf("× %s --- %s\n", result.URL, result.Duration.Round(time.Millisecond))
-	} else {
-		fmt.Printf("%s %s %d %s\n", mark, result.URL, result.Status, result.Duration.Round(time.Millisecond))
+	var config Config
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		fmt.Println("Error: yamlを構造体に変換できません")
+		return
+	}
+
+	for _, ep := range config.Endpoints {
+
+		result := checkHealth(ep.URL)
+
+		var mark string
+		if result.Status >= 200 && result.Status < 300 {
+			mark = "✓"
+		} else {
+			mark = "×"
+		}
+
+		if result.Err != nil {
+			fmt.Printf("× %s --- %s\n", result.URL, result.Duration.Round(time.Millisecond))
+		} else {
+			fmt.Printf("%s %s %d %s\n", mark, result.URL, result.Status, result.Duration.Round(time.Millisecond))
+		}
 	}
 }

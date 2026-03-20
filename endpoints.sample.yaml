@@ -1,0 +1,4 @@
+endpoints:
+  - url: https://example.com
+  - url: https://httpstat.us/200
+  - url: https://httpstat.us/503
