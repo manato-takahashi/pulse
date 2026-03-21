@@ -1,6 +1,6 @@
 # pulse
 
-複数のエンドポイントを指定して、並行でヘルスチェックを行うことができるシンプルなヘルスチェックCLIツール
+複数のエンドポイントを指定して、並行でヘルスチェックを行うことができるシンプルなCLIツール
 
 ## Install
 
@@ -18,7 +18,7 @@ export PATH="$HOME/go/bin:$PATH"
 
 ## Usage
 
-### ローカルCLI
+### Local CLI
 
 ```bash
 # --config フラグで使用する設定ファイルのパスを指定可能
@@ -32,7 +32,7 @@ $ pulse --config endpoints.sample.yaml
 ### CI/CD
 
 ```bash
-# --exit-on-fail フラグを付けることで、1つでもヘルスチェックが失敗するエンドポイントがあればエラーを返す(CI上で検知可能)
+# --exit-on-fail フラグを付けることで、1つでもヘルスチェックが失敗するエンドポイントがあればエラーを返す
 pulse --config endpoints.sample.yaml --exit-on-fail
 ```
 
