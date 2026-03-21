@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -42,12 +43,16 @@ func checkHealth(url string) HealthResult {
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Error: 引数が足りません")
+	configFile := flag.String("config", "", "設定ファイルのパス")
+	exitOnFail := flag.Bool("exit-on-fail", false, "1つでも×があればエラーとするか(CI/CD用の設定)")
+	flag.Parse()
+
+	if *configFile == "" {
+		fmt.Println("Error: --config フラグが必要です")
 		return
 	}
 
-	data, err := os.ReadFile(os.Args[1])
+	data, err := os.ReadFile(*configFile)
 	if err != nil {
 		fmt.Println("Error: yamlが読み込めません")
 		return
@@ -67,19 +72,28 @@ func main() {
 		}(ep.URL)
 	}
 
+	hasFailed := false
+
 	for range config.Endpoints {
 		result := <-ch
 		var mark string
+
 		if result.Status >= 200 && result.Status < 300 {
 			mark = "✓"
 		} else {
 			mark = "×"
+			hasFailed = true
 		}
 
 		if result.Err != nil {
+			hasFailed = true
 			fmt.Printf("× %s --- %s\n", result.URL, result.Duration.Round(time.Millisecond))
 		} else {
 			fmt.Printf("%s %s %d %s\n", mark, result.URL, result.Status, result.Duration.Round(time.Millisecond))
 		}
+	}
+
+	if *exitOnFail && hasFailed {
+		os.Exit(1)
 	}
 }
