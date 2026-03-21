@@ -10,6 +10,12 @@
 go install github.com/manato-takahashi/pulse@latest
 ```
 
+`pulse` コマンドが見つからない場合は、`$GOPATH/bin` にパスを通す:
+
+```bash
+export PATH="$HOME/go/bin:$PATH"
+```
+
 ## Usage
 
 ### ローカルCLI
