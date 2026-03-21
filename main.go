@@ -60,10 +60,15 @@ func main() {
 		return
 	}
 
+	ch := make(chan HealthResult)
 	for _, ep := range config.Endpoints {
+		go func(url string) {
+			ch <- checkHealth(url)
+		}(ep.URL)
+	}
 
-		result := checkHealth(ep.URL)
-
+	for range config.Endpoints {
+		result := <-ch
 		var mark string
 		if result.Status >= 200 && result.Status < 300 {
 			mark = "✓"
