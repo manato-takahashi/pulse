@@ -42,6 +42,27 @@ func checkHealth(url string) HealthResult {
 	}
 }
 
+func printResult(result HealthResult) bool {
+	var mark string
+	hasFailed := false
+
+	if result.Status >= 200 && result.Status < 300 {
+		mark = "✓"
+	} else {
+		mark = "×"
+		hasFailed = true
+	}
+
+	if result.Err != nil {
+		hasFailed = true
+		fmt.Printf("× %s --- %s\n", result.URL, result.Duration.Round(time.Millisecond))
+	} else {
+		fmt.Printf("%s %s %d %s\n", mark, result.URL, result.Status, result.Duration.Round(time.Millisecond))
+	}
+
+	return hasFailed
+}
+
 func main() {
 	configFile := flag.String("config", "", "設定ファイルのパス")
 	exitOnFail := flag.Bool("exit-on-fail", false, "1つでも×があればエラーとするか(CI/CD用の設定)")
@@ -73,23 +94,10 @@ func main() {
 	}
 
 	hasFailed := false
-
 	for range config.Endpoints {
 		result := <-ch
-		var mark string
-
-		if result.Status >= 200 && result.Status < 300 {
-			mark = "✓"
-		} else {
-			mark = "×"
+		if printResult(result) {
 			hasFailed = true
-		}
-
-		if result.Err != nil {
-			hasFailed = true
-			fmt.Printf("× %s --- %s\n", result.URL, result.Duration.Round(time.Millisecond))
-		} else {
-			fmt.Printf("%s %s %d %s\n", mark, result.URL, result.Status, result.Duration.Round(time.Millisecond))
 		}
 	}
 
